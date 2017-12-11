@@ -49,6 +49,7 @@ public class YezzyKitchen {
             if (pageNode.get("pageType").asText().contains("password")) {
                 try {
                     Thread.sleep(5000);
+                    System.out.println("Password page is up, waiting 5 seconds...");
                 } catch (InterruptedException e) {
                     System.out.println("Thread interrupted.");
                 }
