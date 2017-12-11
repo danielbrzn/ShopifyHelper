@@ -1,4 +1,5 @@
 import java.awt.*;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -42,6 +43,14 @@ public class YezzyKitchen {
             byte[] jsonData = productJSON.getBytes();
             ObjectMapper objectMapper = new ObjectMapper();
             rootNode = objectMapper.readTree(jsonData);
+
+            JsonNode idNode = rootNode.path("id");
+
+            String cartLink = "https://yeezysupply.com/cart/" + idNode.asText().trim() + ":1";
+            Desktop desktop = Desktop.getDesktop();
+            desktop.browse(new URI(cartLink));
+            break;
+            /*
             JsonNode pageNode = rootNode.path("page");
 
             if (pageNode.get("pageType").asText().contains("password")) {
@@ -53,8 +62,11 @@ public class YezzyKitchen {
             } else {
                 break;
             }
+            */
+
         }
 
+        /*
         JsonNode idNode = rootNode.path("product");
         Iterator<JsonNode> elements = idNode.get("variants").elements();
         boolean foundCart = false;
@@ -74,6 +86,7 @@ public class YezzyKitchen {
         if (!foundCart) {
             System.out.println("Unable to cart the requested size.");
         }
+        */
     }
 
     private String getPageSource(String prodLink) {
@@ -90,7 +103,7 @@ public class YezzyKitchen {
             urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36");
             System.out.println(urlConnection.getContentEncoding());
             InputStream file = YezzyKitchen.class.getResourceAsStream("yezzysupply.html");
-            return toString(file, "afas");
+            return kanyeString(file, "test");
         } catch (IOException e) {
             System.out.println("Unable to get page source");
         }
@@ -103,6 +116,7 @@ public class YezzyKitchen {
         inst.run();
     }
 
+    // Extracts product metadata from page source
     private static String toString(InputStream inputStream, String encoding) throws IOException {
         BufferedReader bufferedReader;
 
@@ -124,5 +138,40 @@ public class YezzyKitchen {
             }
 
             return stringBuilder.toString();
+    }
+
+    // Extracts size JSON from page source
+    private static String kanyeString(InputStream inputStream, String encoding) throws IOException {
+        BufferedReader bufferedReader;
+
+        if (encoding.contains("gzip")) {
+            bufferedReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream)));
         }
+        else {
+            bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+        }
+
+        String inputLine;
+        StringBuilder stringBuilder = new StringBuilder("{");
+        while ((inputLine = bufferedReader.readLine()) != null) {
+            if (inputLine.contains("KANYE.p.variants.push")) {
+                while(!(inputLine.contains("option1: \"9.5\","))) {
+                    inputLine = bufferedReader.readLine();
+                }
+                while (!(inputLine.contains("KANYE.p.variants.push"))) {
+                    inputLine = bufferedReader.readLine();
+                }
+                while (!(inputLine.contains("option4"))) {
+                    inputLine = bufferedReader.readLine();
+                    stringBuilder.append(inputLine.trim());
+                }
+
+                stringBuilder.append("}");
+                break;
+            }
+        }
+
+        return stringBuilder.toString();
+    }
+
 }
