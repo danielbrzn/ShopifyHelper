@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="YezzyChef_main:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/YezzyChef_main_jar</output-path>
+    <root id="archive" name="YezzyChef_main.jar">
+      <element id="module-output" name="YezzyChef_main" />
+      <element id="extracted-dir" path="$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-databind/2.9.3/193b96ef555b2f2573b576887ba9a93e4bf48e8c/jackson-databind-2.9.3.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-annotations/2.9.0/7c10d545325e3a6e72e06381afe469fd40eb701/jackson-annotations-2.9.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-core/2.9.3/ea9b6fc7bc3ccba9777b0827091f9aa1f8580371/jackson-core-2.9.3.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
