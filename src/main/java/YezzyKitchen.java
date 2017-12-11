@@ -66,7 +66,8 @@ public class YezzyKitchen {
                 JsonNode productID = curElement.get("id");
                 System.out.println(productID);
                 if (curElement.get("public_title").asText().contains(shoeSize)) {
-                    String cartLink = "https://yeezysupply.com/cart/" + productID.asText().trim() + ":1";
+                    URL siteLink = new URL(prodLink);
+                    String cartLink = "https://" + siteLink.getHost() + "/cart/" + productID.asText().trim() + ":1";
                     Desktop desktop = Desktop.getDesktop();
                     desktop.browse(new URI(cartLink));
                     foundCart = true;
