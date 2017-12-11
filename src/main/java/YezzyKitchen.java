@@ -1,7 +1,5 @@
 import java.awt.*;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -17,9 +15,13 @@ import java.net.URLConnection;
 import java.util.Iterator;
 import java.util.zip.GZIPInputStream;
 
-import javafx.application.Platform;
+import javafx.beans.property.DoubleProperty;
+
 
 public class YezzyKitchen {
+
+    private URLConnection pageConnection;
+    private BufferedReader bufferedReader;
 
     private void run() throws IOException, URISyntaxException {
 
@@ -32,25 +34,16 @@ public class YezzyKitchen {
         String prodLink = bufferedReader.readLine().trim();
 
         while (true) {
-            String productJSON = getPageSource(prodLink);
+            pageConnection = getPageSource(prodLink);
 
-            if (productJSON == null) {
+            if (pageConnection == null) {
                 return;
             }
 
-            System.out.println(productJSON);
-
-            byte[] jsonData = productJSON.getBytes();
+            String productMeta = getProductMeta(pageConnection.getInputStream(), pageConnection.getContentEncoding());
+            byte[] jsonData = productMeta.getBytes();
             ObjectMapper objectMapper = new ObjectMapper();
             rootNode = objectMapper.readTree(jsonData);
-
-            JsonNode idNode = rootNode.path("id");
-
-            String cartLink = "https://yeezysupply.com/cart/" + idNode.asText().trim() + ":1";
-            Desktop desktop = Desktop.getDesktop();
-            desktop.browse(new URI(cartLink));
-            break;
-            /*
             JsonNode pageNode = rootNode.path("page");
 
             if (pageNode.get("pageType").asText().contains("password")) {
@@ -62,34 +55,37 @@ public class YezzyKitchen {
             } else {
                 break;
             }
-            */
-
         }
 
-        /*
-        JsonNode idNode = rootNode.path("product");
-        Iterator<JsonNode> elements = idNode.get("variants").elements();
-        boolean foundCart = false;
-        while (elements.hasNext()) {
-            JsonNode curElement = elements.next();
-            JsonNode productID = curElement.get("id");
-            System.out.println(productID);
-            if (curElement.get("public_title").asText().contains(shoeSize)) {
-                String cartLink = "https://yeezysupply.com/cart/" + productID.asText().trim() + ":1";
-                Desktop desktop = Desktop.getDesktop();
-                desktop.browse(new URI(cartLink));
-                foundCart = true;
-                break;
+        if (!prodLink.equals("https://yeezysupply.com/")) {
+            JsonNode idNode = rootNode.path("product");
+            Iterator<JsonNode> elements = idNode.get("variants").elements();
+            boolean foundCart = false;
+            while (elements.hasNext()) {
+                JsonNode curElement = elements.next();
+                JsonNode productID = curElement.get("id");
+                System.out.println(productID);
+                if (curElement.get("public_title").asText().contains(shoeSize)) {
+                    String cartLink = "https://yeezysupply.com/cart/" + productID.asText().trim() + ":1";
+                    Desktop desktop = Desktop.getDesktop();
+                    desktop.browse(new URI(cartLink));
+                    foundCart = true;
+                    break;
+                }
             }
-        }
 
-        if (!foundCart) {
-            System.out.println("Unable to cart the requested size.");
+            if (!foundCart) {
+                System.out.println("Unable to cart the requested size.");
+            }
+        } else {
+            String sizeID = kanyeString(pageConnection.getInputStream(), pageConnection.getContentEncoding(), shoeSize);
+            String cartLink = "https://yeezysupply.com/cart/" + sizeID + ":1";
+            Desktop desktop = Desktop.getDesktop();
+            desktop.browse(new URI(cartLink));
         }
-        */
     }
 
-    private String getPageSource(String prodLink) {
+    private URLConnection getPageSource(String prodLink) {
         URL link = null;
         try {
             link = new URL(prodLink);
@@ -101,9 +97,7 @@ public class YezzyKitchen {
         try {
             urlConnection = link.openConnection();
             urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36");
-            System.out.println(urlConnection.getContentEncoding());
-            InputStream file = YezzyKitchen.class.getResourceAsStream("yezzysupply.html");
-            return kanyeString(file, "test");
+            return urlConnection;
         } catch (IOException e) {
             System.out.println("Unable to get page source");
         }
@@ -117,10 +111,9 @@ public class YezzyKitchen {
     }
 
     // Extracts product metadata from page source
-    private static String toString(InputStream inputStream, String encoding) throws IOException {
-        BufferedReader bufferedReader;
+    private String getProductMeta(InputStream inputStream, String encoding) throws IOException {
 
-        if (encoding.contains("gzip")) {
+        if (encoding != null && encoding.contains("gzip")) {
             bufferedReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream)));
         }
         else {
@@ -140,38 +133,25 @@ public class YezzyKitchen {
             return stringBuilder.toString();
     }
 
-    // Extracts size JSON from page source
-    private static String kanyeString(InputStream inputStream, String encoding) throws IOException {
-        BufferedReader bufferedReader;
+    // Extracts size ID from page source
+    private String kanyeString(InputStream inputStream, String encoding, String size) throws IOException {
 
-        if (encoding.contains("gzip")) {
-            bufferedReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream)));
-        }
-        else {
-            bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
-        }
-
-        String inputLine;
-        StringBuilder stringBuilder = new StringBuilder("{");
+        String inputLine, rawID = "";
         while ((inputLine = bufferedReader.readLine()) != null) {
             if (inputLine.contains("KANYE.p.variants.push")) {
-                while(!(inputLine.contains("option1: \"9.5\","))) {
+                while(!(inputLine.contains("option1: \"" + size + "\","))) {
+                    if (inputLine.contains("id") && !inputLine.contains("parent")) {
+                        rawID = inputLine;
+                    }
                     inputLine = bufferedReader.readLine();
-                }
-                while (!(inputLine.contains("KANYE.p.variants.push"))) {
-                    inputLine = bufferedReader.readLine();
-                }
-                while (!(inputLine.contains("option4"))) {
-                    inputLine = bufferedReader.readLine();
-                    stringBuilder.append(inputLine.trim());
-                }
 
-                stringBuilder.append("}");
-                break;
+                }
+                String sizeID = rawID.trim().substring(4).replace(",","");
+                return sizeID;
             }
         }
 
-        return stringBuilder.toString();
+        return null;
     }
 
 }
