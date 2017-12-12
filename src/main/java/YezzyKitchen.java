@@ -15,12 +15,8 @@ import java.net.URLConnection;
 import java.util.Iterator;
 import java.util.zip.GZIPInputStream;
 
-import javafx.beans.property.DoubleProperty;
-
-
 public class YezzyKitchen {
 
-    private URLConnection pageConnection;
     private BufferedReader bufferedReader;
 
     private void run() throws IOException, URISyntaxException {
@@ -33,6 +29,7 @@ public class YezzyKitchen {
         System.out.println("Enter product URL: ");
         String prodLink = bufferedReader.readLine().trim();
 
+        URLConnection pageConnection;
         while (true) {
             pageConnection = getPageSource(prodLink);
 
@@ -48,8 +45,8 @@ public class YezzyKitchen {
 
             if (pageNode.get("pageType").asText().contains("password")) {
                 try {
-                    Thread.sleep(5000);
-                    System.out.println("Password page is up, waiting 5 seconds...");
+                    System.out.println("Password page is up, waiting 2.5 seconds...");
+                    Thread.sleep(2500);
                 } catch (InterruptedException e) {
                     System.out.println("Thread interrupted.");
                 }
@@ -58,7 +55,7 @@ public class YezzyKitchen {
             }
         }
 
-        if (!prodLink.equals("https://yeezysupply.com/")) {
+        if (!prodLink.equals("https://yeezysupply.com")) {
             JsonNode idNode = rootNode.path("product");
             Iterator<JsonNode> elements = idNode.get("variants").elements();
             boolean foundCart = false;
@@ -137,7 +134,6 @@ public class YezzyKitchen {
 
     // Extracts size ID from page source
     private String kanyeString(InputStream inputStream, String encoding, String size) throws IOException {
-
         String inputLine, rawID = "";
         while ((inputLine = bufferedReader.readLine()) != null) {
             if (inputLine.contains("KANYE.p.variants.push")) {
@@ -148,8 +144,7 @@ public class YezzyKitchen {
                     inputLine = bufferedReader.readLine();
 
                 }
-                String sizeID = rawID.trim().substring(4).replace(",","");
-                return sizeID;
+                return rawID.trim().substring(4).replace(",","");
             }
         }
 
