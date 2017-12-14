@@ -55,7 +55,14 @@ public class YezzyKitchen {
             }
         }
 
-        if (!prodLink.equals("https://yeezysupply.com")) {
+        if (prodLink.contains("yeezysupply") && pageConnection.getURL().getPath().isEmpty()) {
+            System.out.println("Parsing for product launch on YS page");
+            String sizeID = kanyeString(pageConnection.getInputStream(), pageConnection.getContentEncoding(), shoeSize);
+            String cartLink = "https://yeezysupply.com/cart/" + sizeID + ":1";
+            Desktop desktop = Desktop.getDesktop();
+            desktop.browse(new URI(cartLink));
+
+        } else {
             JsonNode idNode = rootNode.path("product");
             Iterator<JsonNode> elements = idNode.get("variants").elements();
             boolean foundCart = false;
@@ -76,11 +83,6 @@ public class YezzyKitchen {
             if (!foundCart) {
                 System.out.println("Unable to cart the requested size.");
             }
-        } else {
-            String sizeID = kanyeString(pageConnection.getInputStream(), pageConnection.getContentEncoding(), shoeSize);
-            String cartLink = "https://yeezysupply.com/cart/" + sizeID + ":1";
-            Desktop desktop = Desktop.getDesktop();
-            desktop.browse(new URI(cartLink));
         }
     }
 
