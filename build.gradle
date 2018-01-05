@@ -4,7 +4,7 @@ plugins {
     id 'application'
 }
 
-mainClassName = 'YezzyKitchen'
+mainClassName = 'ShopifyDestroyer'
 
 apply plugin: 'idea'
 apply plugin: 'java'
@@ -28,7 +28,7 @@ sourceSets {
 }
 
 shadowJar {
-    archiveName = "YezzyKitchen.jar"
+    archiveName = "ShopifyDestroyer.jar"
 
     destinationDir = file("${buildDir}/jar/")
 }

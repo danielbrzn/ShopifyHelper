@@ -15,7 +15,11 @@ import java.net.URLConnection;
 import java.util.Iterator;
 import java.util.zip.GZIPInputStream;
 
-public class YezzyKitchen {
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
+public class ShopifyDestroyer {
 
     private BufferedReader bufferedReader;
 
@@ -37,8 +41,8 @@ public class YezzyKitchen {
                 return;
             }
 
-            String productMeta = getProductMeta(pageConnection.getInputStream(), pageConnection.getContentEncoding());
-            byte[] jsonData = productMeta.getBytes();
+            String shopifyMeta = getProductMeta(pageConnection.getInputStream(), pageConnection.getContentEncoding());
+            byte[] jsonData = shopifyMeta.getBytes();
             ObjectMapper objectMapper = new ObjectMapper();
             rootNode = objectMapper.readTree(jsonData);
             JsonNode pageNode = rootNode.path("page");
@@ -51,8 +55,15 @@ public class YezzyKitchen {
                     System.out.println("Thread interrupted.");
                 }
             } else {
-                break;
+                if (prodLink.contains("eflash") && !prodLink.contains("collections")) {
+                    prodLink = getProductUrl(prodLink);
+                    System.out.println(prodLink);
+                }
+                else
+                    break;
             }
+
+
         }
 
         if (!prodLink.equals("https://yeezysupply.com")) {
@@ -105,7 +116,7 @@ public class YezzyKitchen {
     }
 
     public static void main(String[] args) throws IOException, URISyntaxException {
-        YezzyKitchen inst = new YezzyKitchen();
+        ShopifyDestroyer inst = new ShopifyDestroyer();
         inst.run();
     }
 
@@ -125,7 +136,8 @@ public class YezzyKitchen {
                 if (inputLine.contains("var meta")) {
                     String trimmed = inputLine.trim().substring(11);
                     System.out.println(trimmed);
-                stringBuilder.append(trimmed);
+                    stringBuilder.append(trimmed);
+                    break;
                 }
             }
 
@@ -151,4 +163,17 @@ public class YezzyKitchen {
         return null;
     }
 
+    // Extracts product URL for E-Flash
+    private String getProductUrl(String shopifyUrl) throws IOException {
+        String inputLine, toAppend;
+        while ((inputLine = bufferedReader.readLine()) != null) {
+            if (inputLine.contains("grid-view-item__link")) {
+                Document doc = Jsoup.parse(inputLine);
+                Element link = doc.select("a").first();
+                toAppend = link.attr("href");
+                return shopifyUrl + toAppend;
+            }
+        }
+        return null;
+    }
 }
