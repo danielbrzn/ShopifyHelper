@@ -49,8 +49,8 @@ public class ShopifyDestroyer {
 
             if (pageNode.get("pageType").asText().contains("password")) {
                 try {
-                    System.out.println("Password page is up, waiting 0.5 seconds...");
-                    Thread.sleep(500);
+                    System.out.println("Password page is up, waiting 1.5 seconds...");
+                    Thread.sleep(1500);
                 } catch (InterruptedException e) {
                     System.out.println("Thread interrupted.");
                 }

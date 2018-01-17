@@ -1,6 +1,6 @@
-# ShopifyDestroyer
+# ShopifyHelper
 
-ShopifyDestroyer aims to be a solution for quickly adding a product to cart on Shopify-based websites by avoiding the need for the user
+ShopifyHelper aims to be a solution for quickly adding a product to cart on Shopify-based websites by avoiding the need for the user
 to manually select the product parameters, saving valuable time.
 
 ## Getting Started
