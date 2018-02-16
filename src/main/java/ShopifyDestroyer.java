@@ -150,7 +150,7 @@ public class ShopifyDestroyer {
     private String kanyeString(InputStream inputStream, String encoding, String size) throws IOException {
         String inputLine, rawID = "";
         while ((inputLine = bufferedReader.readLine()) != null) {
-            if (inputLine.contains("KANYE.p.variants.push")) {
+            if (inputLine.contains("p.variants.push")) {
                 while(!(inputLine.contains("option1: \"" + size + "\","))) {
                     if (inputLine.contains("id") && !inputLine.contains("parent")) {
                         rawID = inputLine;
