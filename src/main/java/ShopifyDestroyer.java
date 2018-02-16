@@ -34,6 +34,7 @@ public class ShopifyDestroyer {
         String prodLink = bufferedReader.readLine().trim();
 
         URLConnection pageConnection;
+        JsonNode pageNode;
         while (true) {
             pageConnection = getPageSource(prodLink);
 
@@ -45,7 +46,7 @@ public class ShopifyDestroyer {
             byte[] jsonData = shopifyMeta.getBytes();
             ObjectMapper objectMapper = new ObjectMapper();
             rootNode = objectMapper.readTree(jsonData);
-            JsonNode pageNode = rootNode.path("page");
+            pageNode = rootNode.path("page");
 
             if (pageNode.get("pageType").asText().contains("password")) {
                 try {
@@ -66,7 +67,7 @@ public class ShopifyDestroyer {
 
         }
 
-        if (prodLink.contains("yeezysupply") && pageConnection.getURL().getPath().isEmpty()) {
+        if (prodLink.contains("yeezysupply") && pageNode.get("pageType").asText().contains("home")) {
             System.out.println("Parsing for product launch on YS page");
             String sizeID = kanyeString(pageConnection.getInputStream(), pageConnection.getContentEncoding(), shoeSize);
             String cartLink = "https://yeezysupply.com/cart/" + sizeID + ":1";
